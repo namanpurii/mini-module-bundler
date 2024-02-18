@@ -1,0 +1,14 @@
+Implementation Overview:
+    1. Parse a single file and extract its dependencies
+    2. Recursively build a dependency graph
+    3. Package everything into a single file.
+
+We have taken a simple example in our src directory:
+    - Where index.js has single dependency from message.js and, message.js has single 
+    dependency from name.js
+    - bundle.js file in the root directory is the output file; as a result of bundling 
+    dependencies from all the files in the src directory.
+
+
+
+
