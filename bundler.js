@@ -1,5 +1,6 @@
 //using commonJS templating cuz ESM in bundle might break the continuity of me transpiling all the other files in the src directory from ESM to CJS
 const fs = require("fs") 
+const path = require("path") //to resolve relative paths
 const babylon = require("babylon") // to generate AST
 const traverse = require("@babel/traverse").default // to traverse, update and query nodes in an AST
 
@@ -28,6 +29,20 @@ function createAsset(fileName) {
     }
 }
 
-const mainAsset = createAsset("./src/index.js") //testing this out with this command in the terminal window: node ./bundler.js | npx js-beautify | npx cardinal
-// console.log(mainAsset)
-//once we have the dependencies of the source/entry file(i.e. mainAsset), we'd want to extract the dependencies of its dependencies[]
+function createGraph(entryFile) { 
+    const mainAsset = createAsset(entryFile) //once we have the dependencies of the source/entry file(i.e. mainAsset), we'd want to extract the dependencies of its dependencies[] and so on..
+    const queue = [mainAsset] 
+    for(const asset of queue) {
+        asset.mapping = {} //imitating adjacency list through this attribute, for each node(i.e. asset) in the dependency graph
+        const dirname = path.dirname(asset.fileName);
+        asset.dependencies.forEach((dependency)=>{
+            const child = createAsset(path.join(dirname, dependency))
+            asset.mapping[dependency] = child.id
+            queue.push(child)
+        }) 
+    }
+    return queue;
+}
+
+const graph = createGraph("./src/index.js")
+console.log("Graph", graph);
