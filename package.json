@@ -9,5 +9,12 @@
   },
   "keywords": [],
   "author": "Naman Puri",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "@babel/traverse": "^7.23.9",
+    "babylon": "^6.18.0"
+  }
 }
