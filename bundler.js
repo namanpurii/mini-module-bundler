@@ -3,6 +3,7 @@ const fs = require("fs")
 const path = require("path") //to resolve relative paths
 const babylon = require("babylon") // to generate AST
 const traverse = require("@babel/traverse").default // to traverse, update and query nodes in an AST
+const babel = require("@babel/core")
 
 let file_ID = 0;
 
@@ -22,10 +23,13 @@ function createAsset(fileName) {
     // console.log(dependencies)
     const id = file_ID++; //each 'fileName'(i.e. argument to the fn createAsset) will get a unique id
     
+    const {code} = babel.transformFromAst(ast)
+
     return { //returning dependencies[] with other relevant information
         id, 
         fileName, 
         dependencies,
+        code,
     }
 }
 
@@ -44,5 +48,34 @@ function createGraph(entryFile) {
     return queue;
 }
 
+function bundle(graph) {
+    let modules = ""
+    graph.forEach((dep)=>{
+        modules+=`${dep.id}: [
+            function(require, module, exports) {
+                ${dep.code}
+            },
+            ${JSON.stringify(dep.mapping)},
+        ],`
+    })
+    const res = `(function(modules) {
+        function require(id) {
+            const mod = modules[id]
+            const [fn, mapping] = mod
+
+            function localRequire(relPath) {return require(mapping[relPath])}
+
+            const module = { exports: {} }
+            fn(localRequire, module, module.exports);
+
+            return module.exports
+        }
+
+        require(0)
+    })({${modules}})`
+    return res
+}
+
 const graph = createGraph("./src/index.js")
-console.log("Graph", graph);
+const res = bundle(graph)
+console.log(res);
